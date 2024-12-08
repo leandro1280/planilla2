@@ -226,7 +226,7 @@ function displayPlanilla(alumnos) {
 
     // Por cada alumno y por cada materia, crear una fila
     alumnos.forEach(alumno => {
-        materiasPorCurso[cursoSeleccionado].forEach((materia, index) => {
+        materiasPorCurso[cursoSeleccionado].forEach((materia) => {
             const fila = document.createElement('tr');
             fila.dataset.alumno = alumno.Nombre;
             fila.dataset.materia = materia.toUpperCase();
@@ -300,8 +300,8 @@ function displayPlanilla(alumnos) {
 
                     celda.appendChild(inputNota);
                 } else {
-                    // Asistencia u otras columnas (puedes agregar lógica si es necesario)
-                    // Por ahora, dejar en blanco o agregar una celda de asistencia editable si lo deseas
+                    // Asistencia u otras columnas
+                    // Por ahora se deja vacío o puedes añadir lógica si es necesario
                 }
 
                 fila.appendChild(celda);
@@ -336,14 +336,9 @@ function actualizarCruces(fila, inputNota) {
         return;
     }
 
-    // Obtener las celdas relevantes usando clases
     const celdas = fila.querySelectorAll('td');
-    // Índices:
-    // Alumno: 0, Materia:1, TEA1:2, TEP1:3, TED1:4, Nota1:5, Asistencia1:6,
-    // TEA2:7, TEP2:8, TED2:9, Nota2:10, Asistencia2:11
 
     let celdaTEA, celdaTEP, celdaTED;
-
     if (tipoNota === 'Nota 1') {
         celdaTEA = celdas[2];
         celdaTEP = celdas[3];
@@ -364,7 +359,6 @@ function actualizarCruces(fila, inputNota) {
     celdaTEP.textContent = '';
     celdaTED.textContent = '';
 
-    // Marcar la celda correspondiente
     let cruz = '';
     if (nota >= 1 && nota <= 3) {
         celdaTED.textContent = 'X';
@@ -376,11 +370,9 @@ function actualizarCruces(fila, inputNota) {
         celdaTEA.textContent = 'X';
         cruz = 'TEA';
     } else {
-        // Nota fuera de rango, limpiar celdas
         console.warn('Nota fuera de rango para:', tipoNota, 'Nota ingresada:', nota);
     }
 
-    // Actualizar gradesData con la nueva nota y cruces
     const alumno = fila.dataset.alumno || 'Desconocido';
     const materia = fila.dataset.materia || 'Desconocida';
 
@@ -399,17 +391,12 @@ function actualizarCruces(fila, inputNota) {
     gradesData[cursoSeleccionado][alumno][materia][`TEP ${tipoNota.slice(-1)}`] = (cruz === 'TEP') ? 'X' : '';
     gradesData[cursoSeleccionado][alumno][materia][`TED ${tipoNota.slice(-1)}`] = (cruz === 'TED') ? 'X' : '';
 
-    // Guardar avances
     guardarAvances();
-
-    // Recalcular y mostrar todos los porcentajes
     calcularPorcentajesGenerales();
 }
 
-// Función para limpiar las cruces de TEA, TEP y TED
 function limpiarCruces(fila, tipoNota) {
     const celdas = fila.querySelectorAll('td');
-
     let celdaTEA, celdaTEP, celdaTED;
 
     if (tipoNota === 'Nota 1') {
@@ -427,24 +414,19 @@ function limpiarCruces(fila, tipoNota) {
     if (celdaTED) celdaTED.textContent = '';
 }
 
-// Función para guardar los avances en localStorage
 function guardarAvances() {
-    // Guardar gradesData en localStorage
     localStorage.setItem('gradesData', JSON.stringify(gradesData));
     console.log('Avances guardados en localStorage.');
 }
 
-// Función para cargar los avances desde localStorage
 function cargarAvances() {
     const datosGuardados = JSON.parse(localStorage.getItem('gradesData'));
     if (!datosGuardados) return;
 
     gradesData = datosGuardados;
 
-    // Solo cargar si el curso seleccionado está presente en gradesData
     if (!gradesData[cursoSeleccionado]) return;
 
-    // Obtener todas las filas de la tabla
     const filas = Array.from(planillaContainer.querySelectorAll('tbody tr'));
 
     filas.forEach(fila => {
@@ -453,30 +435,22 @@ function cargarAvances() {
 
         if (gradesData[cursoSeleccionado][alumnoNombre] && gradesData[cursoSeleccionado][alumnoNombre][materia]) {
             const notasGuardadas = gradesData[cursoSeleccionado][alumnoNombre][materia];
-
-            // Obtener las celdas correspondientes
             const celdas = fila.querySelectorAll('td');
 
             if (celdas.length >= 12) {
-                // TEA 1
                 const celdaTEA1 = celdas[2];
                 const celdaTEP1 = celdas[3];
                 const celdaTED1 = celdas[4];
                 const inputNota1 = celdas[5].querySelector('input');
-                // Asistencia 1: celdas[6]
-
                 if (notasGuardadas['TEA 1']) celdaTEA1.textContent = notasGuardadas['TEA 1'];
                 if (notasGuardadas['TEP 1']) celdaTEP1.textContent = notasGuardadas['TEP 1'];
                 if (notasGuardadas['TED 1']) celdaTED1.textContent = notasGuardadas['TED 1'];
                 if (inputNota1) inputNota1.value = notasGuardadas['Nota 1'] || '';
 
-                // TEA 2
                 const celdaTEA2 = celdas[7];
                 const celdaTEP2 = celdas[8];
                 const celdaTED2 = celdas[9];
                 const inputNota2 = celdas[10].querySelector('input');
-                // Asistencia 2: celdas[11]
-
                 if (notasGuardadas['TEA 2']) celdaTEA2.textContent = notasGuardadas['TEA 2'];
                 if (notasGuardadas['TEP 2']) celdaTEP2.textContent = notasGuardadas['TEP 2'];
                 if (notasGuardadas['TED 2']) celdaTED2.textContent = notasGuardadas['TED 2'];
@@ -488,15 +462,13 @@ function cargarAvances() {
     console.log('Avances cargados desde localStorage.');
 }
 
-// Función para limpiar los datos guardados
 function limpiarDatos() {
     if (confirm('¿Estás seguro de que deseas limpiar todos los datos guardados? Esta acción no se puede deshacer.')) {
         localStorage.removeItem('gradesData');
-        location.reload(); // Recargar la página para reflejar los cambios
+        location.reload();
     }
 }
 
-// Función para calcular y mostrar todos los porcentajes
 function calcularPorcentajesGenerales() {
     calcularPorcentajesPlgLitPorCurso();
     calcularPorcentajesMtmMcsPorCurso();
@@ -545,12 +517,10 @@ function calcularPorcentajesPlgLitPorCurso() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesPlgLitPorCursoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -582,14 +552,14 @@ function calcularPorcentajesMtmMcsPorCurso() {
         for (const materia in materias) {
             if (materia === 'MTM' || materia === 'MCS') {
                 const notasMateria = materias[materia];
-                // Contar TEA, TEP y TED de Nota 1
+                // Nota 1
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
                     if (notasMateria['TEP 1'] === 'X') totalTEP++;
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
-                // Contar TEA, TEP y TED de Nota 2
+                // Nota 2
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -600,12 +570,10 @@ function calcularPorcentajesMtmMcsPorCurso() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesMtmMcsPorCursoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -620,47 +588,48 @@ function mostrarPorcentajesMtmMcsPorCursoUI(porcentajeTEA, porcentajeTEP, porcen
     }
 }
 
-// 3. Contador de MTM de Ciclo Básico
+// 3. Contador de MTM de Ciclo Básico (corregido)
 function calcularPorcentajesMtmCicloBasico() {
-    if (!cursoSeleccionado) return;
-
-    const datosCurso = gradesData[cursoSeleccionado];
-    if (!datosCurso) return;
-
     let totalTEA = 0;
     let totalTEP = 0;
     let totalTED = 0;
     let totalNotas = 0;
 
-    for (const alumno in datosCurso) {
-        const materias = datosCurso[alumno];
-        for (const materia in materias) {
-            if (materia === 'MTM') {
-                const notasMateria = materias[materia];
-                // Contar TEA, TEP y TED de Nota 1
-                if (notasMateria['Nota 1']) {
-                    totalNotas++;
-                    if (notasMateria['TEA 1'] === 'X') totalTEA++;
-                    if (notasMateria['TEP 1'] === 'X') totalTEP++;
-                    if (notasMateria['TED 1'] === 'X') totalTED++;
-                }
-                // Contar TEA, TEP y TED de Nota 2
-                if (notasMateria['Nota 2']) {
-                    totalNotas++;
-                    if (notasMateria['TEA 2'] === 'X') totalTEA++;
-                    if (notasMateria['TEP 2'] === 'X') totalTEP++;
-                    if (notasMateria['TED 2'] === 'X') totalTED++;
+    // Recorremos todos los cursos del ciclo básico
+    cursosCicloBasico.forEach(curso => {
+        const datosCurso = gradesData[curso.toLowerCase()];
+        if (!datosCurso) return;
+
+        for (const alumno in datosCurso) {
+            const materias = datosCurso[alumno];
+            for (const materia in materias) {
+                if (materia === 'MTM') {
+                    const notasMateria = materias[materia];
+
+                    // Nota 1
+                    if (notasMateria['Nota 1']) {
+                        totalNotas++;
+                        if (notasMateria['TEA 1'] === 'X') totalTEA++;
+                        if (notasMateria['TEP 1'] === 'X') totalTEP++;
+                        if (notasMateria['TED 1'] === 'X') totalTED++;
+                    }
+
+                    // Nota 2
+                    if (notasMateria['Nota 2']) {
+                        totalNotas++;
+                        if (notasMateria['TEA 2'] === 'X') totalTEA++;
+                        if (notasMateria['TEP 2'] === 'X') totalTEP++;
+                        if (notasMateria['TED 2'] === 'X') totalTED++;
+                    }
                 }
             }
         }
-    }
+    });
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesMtmCicloBasicoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -675,47 +644,48 @@ function mostrarPorcentajesMtmCicloBasicoUI(porcentajeTEA, porcentajeTEP, porcen
     }
 }
 
-// 4. Contador de PLG de Ciclo Básico
+// 4. Contador de PLG de Ciclo Básico (corregido)
 function calcularPorcentajesPlgCicloBasico() {
-    if (!cursoSeleccionado) return;
-
-    const datosCurso = gradesData[cursoSeleccionado];
-    if (!datosCurso) return;
-
     let totalTEA = 0;
     let totalTEP = 0;
     let totalTED = 0;
     let totalNotas = 0;
 
-    for (const alumno in datosCurso) {
-        const materias = datosCurso[alumno];
-        for (const materia in materias) {
-            if (materia === 'PLG') {
-                const notasMateria = materias[materia];
-                // Contar TEA, TEP y TED de Nota 1
-                if (notasMateria['Nota 1']) {
-                    totalNotas++;
-                    if (notasMateria['TEA 1'] === 'X') totalTEA++;
-                    if (notasMateria['TEP 1'] === 'X') totalTEP++;
-                    if (notasMateria['TED 1'] === 'X') totalTED++;
-                }
-                // Contar TEA, TEP y TED de Nota 2
-                if (notasMateria['Nota 2']) {
-                    totalNotas++;
-                    if (notasMateria['TEA 2'] === 'X') totalTEA++;
-                    if (notasMateria['TEP 2'] === 'X') totalTEP++;
-                    if (notasMateria['TED 2'] === 'X') totalTED++;
+    // Recorremos todos los cursos del ciclo básico
+    cursosCicloBasico.forEach(curso => {
+        const datosCurso = gradesData[curso.toLowerCase()];
+        if (!datosCurso) return;
+
+        for (const alumno in datosCurso) {
+            const materias = datosCurso[alumno];
+            for (const materia in materias) {
+                if (materia === 'PLG') {
+                    const notasMateria = materias[materia];
+
+                    // Nota 1
+                    if (notasMateria['Nota 1']) {
+                        totalNotas++;
+                        if (notasMateria['TEA 1'] === 'X') totalTEA++;
+                        if (notasMateria['TEP 1'] === 'X') totalTEP++;
+                        if (notasMateria['TED 1'] === 'X') totalTED++;
+                    }
+
+                    // Nota 2
+                    if (notasMateria['Nota 2']) {
+                        totalNotas++;
+                        if (notasMateria['TEA 2'] === 'X') totalTEA++;
+                        if (notasMateria['TEP 2'] === 'X') totalTEP++;
+                        if (notasMateria['TED 2'] === 'X') totalTED++;
+                    }
                 }
             }
         }
-    }
+    });
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesPlgCicloBasicoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -747,7 +717,6 @@ function calcularPorcentajesTeaTepTedPorCurso() {
         for (const materia in materias) {
             const notasMateria = materias[materia];
 
-            // Contar TEA, TEP y TED de Nota 1
             if (notasMateria['Nota 1']) {
                 totalNotas++;
                 if (notasMateria['TEA 1'] === 'X') totalTEA++;
@@ -755,7 +724,6 @@ function calcularPorcentajesTeaTepTedPorCurso() {
                 if (notasMateria['TED 1'] === 'X') totalTED++;
             }
 
-            // Contar TEA, TEP y TED de Nota 2
             if (notasMateria['Nota 2']) {
                 totalNotas++;
                 if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -765,12 +733,10 @@ function calcularPorcentajesTeaTepTedPorCurso() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesTeaTepTedPorCursoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -801,7 +767,6 @@ function calcularPorcentajesTepTeaTedCicloBasico() {
             for (const materia in materias) {
                 const notasMateria = materias[materia];
 
-                // Contar TEA, TEP y TED de Nota 1
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
@@ -809,7 +774,6 @@ function calcularPorcentajesTepTeaTedCicloBasico() {
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
 
-                // Contar TEA, TEP y TED de Nota 2
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -820,12 +784,10 @@ function calcularPorcentajesTepTeaTedCicloBasico() {
         }
     });
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesTepTeaTedCicloBasicoUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -857,14 +819,13 @@ function calcularPorcentajesMcsCicloSuperior() {
         for (const materia in materias) {
             if (materia === 'MCS') {
                 const notasMateria = materias[materia];
-                // Contar TEA, TEP y TED de Nota 1
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
                     if (notasMateria['TEP 1'] === 'X') totalTEP++;
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
-                // Contar TEA, TEP y TED de Nota 2
+
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -875,12 +836,10 @@ function calcularPorcentajesMcsCicloSuperior() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesMcsCicloSuperiorUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -912,14 +871,14 @@ function calcularPorcentajesLitCicloSuperior() {
         for (const materia in materias) {
             if (materia === 'LIT') {
                 const notasMateria = materias[materia];
-                // Contar TEA, TEP y TED de Nota 1
+
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
                     if (notasMateria['TEP 1'] === 'X') totalTEP++;
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
-                // Contar TEA, TEP y TED de Nota 2
+
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -930,12 +889,10 @@ function calcularPorcentajesLitCicloSuperior() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesLitCicloSuperiorUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -966,7 +923,6 @@ function calcularPorcentajesTedTeaTepCicloSuperior() {
             for (const materia in materias) {
                 const notasMateria = materias[materia];
 
-                // Contar TEA, TEP y TED de Nota 1
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
@@ -974,7 +930,6 @@ function calcularPorcentajesTedTeaTepCicloSuperior() {
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
 
-                // Contar TEA, TEP y TED de Nota 2
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -985,12 +940,10 @@ function calcularPorcentajesTedTeaTepCicloSuperior() {
         }
     });
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesTedTeaTepCicloSuperiorUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -1019,7 +972,6 @@ function calcularPorcentajesTedTeaTepTodaEscuela() {
             for (const materia in materias) {
                 const notasMateria = materias[materia];
 
-                // Contar TEA, TEP y TED de Nota 1
                 if (notasMateria['Nota 1']) {
                     totalNotas++;
                     if (notasMateria['TEA 1'] === 'X') totalTEA++;
@@ -1027,7 +979,6 @@ function calcularPorcentajesTedTeaTepTodaEscuela() {
                     if (notasMateria['TED 1'] === 'X') totalTED++;
                 }
 
-                // Contar TEA, TEP y TED de Nota 2
                 if (notasMateria['Nota 2']) {
                     totalNotas++;
                     if (notasMateria['TEA 2'] === 'X') totalTEA++;
@@ -1038,12 +989,10 @@ function calcularPorcentajesTedTeaTepTodaEscuela() {
         }
     }
 
-    // Calcular porcentajes
     const porcentajeTEA = totalNotas ? ((totalTEA / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTEP = totalNotas ? ((totalTEP / totalNotas) * 100).toFixed(2) : '0';
     const porcentajeTED = totalNotas ? ((totalTED / totalNotas) * 100).toFixed(2) : '0';
 
-    // Mostrar resultados
     mostrarPorcentajesTedTeaTepTodaEscuelaUI(porcentajeTEA, porcentajeTEP, porcentajeTED);
 }
 
@@ -1063,10 +1012,7 @@ function exportToPDF(tipo) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Seleccionar el contenido a exportar
     const planilla = document.getElementById('planilla-container');
-
-    // Usar html2canvas para capturar el contenido
     html2canvas(planilla).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const imgProps = doc.getImageProperties(imgData);
@@ -1091,3 +1037,4 @@ function exportToExcel() {
     const workbook = XLSX.utils.table_to_book(table, { sheet: "Planilla" });
     XLSX.writeFile(workbook, 'planilla_notas.xlsx');
 }
+
