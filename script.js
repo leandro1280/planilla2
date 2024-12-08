@@ -1,6 +1,3 @@
-// script.js
-
-// Declaración global de variables
 let inputCSV;
 let cursoContainer;
 let alumnoContainer;
@@ -50,7 +47,6 @@ materiasPorCurso = {
 
 // Event Listener para DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Asignar las referencias a elementos del DOM
     inputCSV = document.getElementById('inputCSV');
     cursoContainer = document.getElementById('curso-container');
     alumnoContainer = document.getElementById('alumno-container');
@@ -60,52 +56,43 @@ document.addEventListener('DOMContentLoaded', () => {
     exportarExcelButton = document.getElementById('exportarExcel');
     limpiarAvancesButton = document.getElementById('limpiarAvances');
 
-    // Añadir event listeners
     inputCSV.addEventListener('change', handleFileSelect);
     exportarCompletaButton.addEventListener('click', () => exportToPDF('completa'));
     exportarParcialButton.addEventListener('click', () => exportToPDF('parcial'));
     exportarExcelButton.addEventListener('click', exportToExcel);
     limpiarAvancesButton.addEventListener('click', limpiarDatos);
 
-    // Cargar avances al iniciar
     cargarAvances();
-
-    // Calcular y mostrar porcentajes generales al cargar
     calcularPorcentajesGenerales();
 });
 
-// Función para manejar la selección de archivo CSV
 function handleFileSelect(event) {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            const contents = e.target.result;
-            parseCSV(contents);
+            parseCSV(e.target.result);
         };
         reader.readAsText(file);
     }
 }
 
-// Función para parsear el contenido del CSV
 function parseCSV(contents) {
     const rows = contents.split('\n').map(r => r.trim()).filter(r => r);
-
-    // Ignorar la línea de encabezado si existe
     let dataRows = rows;
     if (rows[0].includes(';')) {
-        dataRows = rows.slice(1); // Si hay encabezado, lo ignoramos
+        dataRows = rows.slice(1);
     }
 
     const data = dataRows.map(row => {
-        const cols = row.split(';').map(c => c.trim()); // Usamos punto y coma como separador
+        const cols = row.split(';').map(c => c.trim());
         if (cols.length >= 2) {
             return {
                 Curso: cols[0].toLowerCase().trim(),
                 Nombre: cols[1]
             };
         } else {
-            return null; // Ignorar filas que no tienen al menos dos columnas
+            return null;
         }
     }).filter(item => item !== null);
 
@@ -115,7 +102,6 @@ function parseCSV(contents) {
     displayCursoSelection();
 }
 
-// Función para mostrar la selección de cursos
 function displayCursoSelection() {
     cursoContainer.innerHTML = '';
     const label = document.createElement('label');
@@ -140,20 +126,16 @@ function displayCursoSelection() {
         cursoSeleccionado = select.value.toLowerCase().trim();
         const alumnosDelCurso = alumnosData.filter(a => a.Curso === cursoSeleccionado);
         displayAlumnoSelection(alumnosDelCurso);
-        const alumnosFiltrados = alumnosDelCurso;
-        displayPlanilla(alumnosFiltrados);
-        // Calcular porcentajes al seleccionar un nuevo curso
+        displayPlanilla(alumnosDelCurso);
         calcularPorcentajesGenerales();
     });
 
-    // Seleccionar el primer curso por defecto si hay cursos disponibles
     if (cursosDisponibles.length > 0) {
         select.value = cursosDisponibles[0];
         select.dispatchEvent(new Event('change'));
     }
 }
 
-// Función para mostrar la selección de alumnos
 function displayAlumnoSelection(alumnos) {
     alumnoContainer.innerHTML = '';
     const label = document.createElement('label');
@@ -179,20 +161,16 @@ function displayAlumnoSelection(alumnos) {
     });
 }
 
-// Función para mostrar la planilla de notas
 function displayPlanilla(alumnos) {
     planillaContainer.innerHTML = '';
 
-    // Crear contenedor de la planilla
     const planilla = document.createElement('div');
     planilla.classList.add('planilla');
 
-    // Título de la planilla
     const titulo = document.createElement('h3');
     titulo.textContent = cursoSeleccionado ? `Planilla de ${cursoSeleccionado.toUpperCase()}` : 'Planilla';
     planilla.appendChild(titulo);
 
-    // Si no hay cursoSeleccionado o no hay materias definidas, solo mostrará el título
     if (cursoSeleccionado && !materiasPorCurso[cursoSeleccionado]) {
         alert(`No hay materias definidas para el curso ${cursoSeleccionado.toUpperCase()}`);
         planillaContainer.appendChild(planilla);
@@ -200,12 +178,10 @@ function displayPlanilla(alumnos) {
     }
 
     if (cursoSeleccionado && materiasPorCurso[cursoSeleccionado]) {
-        // Crear la tabla de la planilla
         const tabla = document.createElement('table');
         tabla.classList.add('table', 'table-bordered', 'tabla-planilla');
-        tabla.id = 'planilla-table'; // Asignar un ID para facilitar la selección
+        tabla.id = 'planilla-table';
 
-        // Crear el encabezado de la tabla
         const thead = document.createElement('thead');
         thead.classList.add('table-dark');
         const encabezadoFila = document.createElement('tr');
@@ -221,7 +197,6 @@ function displayPlanilla(alumnos) {
         thead.appendChild(encabezadoFila);
         tabla.appendChild(thead);
 
-        // Crear el cuerpo de la tabla
         const tbody = document.createElement('tbody');
 
         alumnos.forEach(alumno => {
@@ -238,7 +213,7 @@ function displayPlanilla(alumnos) {
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.classList.add('form-check-input', 'checkbox-alumno');
-                checkbox.checked = true; // Seleccionado por defecto
+                checkbox.checked = true;
 
                 const nombreTexto = document.createElement('span');
                 nombreTexto.textContent = ' ' + alumno.Nombre;
@@ -248,10 +223,8 @@ function displayPlanilla(alumnos) {
 
                 celdaNombre.appendChild(contenedorNombre);
                 celdaNombre.classList.add('celda-nombre');
-
                 fila.appendChild(celdaNombre);
 
-                // Celda para la materia
                 const celdaMateria = document.createElement('td');
                 celdaMateria.textContent = materia;
                 celdaMateria.dataset.materia = materia.toUpperCase();
@@ -260,13 +233,11 @@ function displayPlanilla(alumnos) {
                 columnas.slice(2).forEach(columna => {
                     const celda = document.createElement('td');
 
-                    if (columna.startsWith('TEA')) {
-                        celda.classList.add('celda-tea');
-                    } else if (columna.startsWith('TEP')) {
-                        celda.classList.add('celda-tep');
-                    } else if (columna.startsWith('TED')) {
-                        celda.classList.add('celda-ted');
-                    } else if (columna.startsWith('Nota')) {
+                    if (columna.startsWith('TEA')) celda.classList.add('celda-tea');
+                    else if (columna.startsWith('TEP')) celda.classList.add('celda-tep');
+                    else if (columna.startsWith('TED')) celda.classList.add('celda-ted');
+
+                    if (columna.startsWith('Nota')) {
                         const inputNota = document.createElement('input');
                         inputNota.type = 'number';
                         inputNota.classList.add('form-control', 'input-nota');
@@ -274,7 +245,6 @@ function displayPlanilla(alumnos) {
                         inputNota.max = 10;
                         inputNota.dataset.tipo = columna;
 
-                        // Cargar nota desde gradesData si existe
                         const alumnoNombre = alumno.Nombre;
                         const materiaUpper = materia.toUpperCase();
                         if (gradesData[cursoSeleccionado] && gradesData[cursoSeleccionado][alumnoNombre] && gradesData[cursoSeleccionado][alumnoNombre][materiaUpper]) {
@@ -313,8 +283,6 @@ function actualizarCruces(fila, inputNota) {
     const nota = parseInt(inputNota.value);
     const tipoNota = inputNota.dataset.tipo;
 
-    console.log('Actualizando cruces:', tipoNota, 'Nota:', nota);
-
     if (isNaN(nota)) {
         limpiarCruces(fila, tipoNota);
         return;
@@ -352,8 +320,6 @@ function actualizarCruces(fila, inputNota) {
     } else if (nota >= 7 && nota <= 10) {
         celdaTEA.textContent = 'X';
         cruz = 'TEA';
-    } else {
-        console.warn('Nota fuera de rango:', nota);
     }
 
     const alumno = fila.dataset.alumno || 'Desconocido';
@@ -463,7 +429,7 @@ function calcularPorcentajesGenerales() {
     calcularPorcentajesPlgCicloBasico();
     calcularPorcentajesTepTeaTedCicloBasico();
 
-    // Por Ciclo Superior
+    // Por Ciclo Superior (MCS, LIT, TEA/TEP/TED)
     calcularPorcentajesMcsCicloSuperior();
     calcularPorcentajesLitCicloSuperior();
     calcularPorcentajesTedTeaTepCicloSuperior();
@@ -471,7 +437,6 @@ function calcularPorcentajesGenerales() {
     // Toda la Escuela
     calcularPorcentajesTedTeaTepTodaEscuela();
 }
-
 // 1. PLG/LIT por Curso
 function calcularPorcentajesPlgLitPorCurso() {
     // Por curso: usar gradesData[cursoSeleccionado], si no hay cursoSeleccionado o no datos, mostrar 0%
@@ -945,7 +910,6 @@ function mostrarPorcentajesTedTeaTepTodaEscuelaUI(tea, tep, ted) {
     }
 }
 
-// Funciones de exportación
 function exportToPDF(tipo) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -975,4 +939,3 @@ function exportToExcel() {
     const workbook = XLSX.utils.table_to_book(table, { sheet: "Planilla" });
     XLSX.writeFile(workbook, 'planilla_notas.xlsx');
 }
-
